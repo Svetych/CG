@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/sveta/Документы/msu_cmc_cg_2021/template1_cpp/Image.h
+string
+-
+
+/home/sveta/Документы/msu_cmc_cg_2021/template1_cpp/Player.cpp
+Player.h
+/home/sveta/Документы/msu_cmc_cg_2021/template1_cpp/Player.h
+
+/home/sveta/Документы/msu_cmc_cg_2021/template1_cpp/Player.h
+Image.h
+/home/sveta/Документы/msu_cmc_cg_2021/template1_cpp/Image.h
+
