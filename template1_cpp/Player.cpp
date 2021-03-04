@@ -8,36 +8,40 @@ bool Player::Moved() const
     return true;
 }
 
-bool checktile(int x, int y, int *m) {return ! (m[y / tileSize * WW + x / tileSize]);}
 
 void Player::ProcessInput(MovementDir dir, int *m)
 {
-  int move_dist = move_speed * 2;
+  int move_dist = move_speed * 1;
+  int k1, k2;
   switch(dir)
   {
     case MovementDir::UP:
-	  if (checktile(coords.x, coords.y - move_dist, m))
+	  k1 = m[(coords.y-move_dist)/tileSize*WW+coords.x/tileSize]; k2 = m[(coords.y-move_dist)/tileSize*WW+(coords.x-1)/tileSize+1];
+	  if ((k1<2) && (k2<2))
       {
 	    old_coords.y = coords.y;
         coords.y -= move_dist;
 	  }
       break;
     case MovementDir::DOWN:
-	  if (checktile(coords.x, coords.y + move_dist + tileSize -1 , m))
+      k1 = m[(coords.y+move_dist+tileSize-1)/tileSize*WW+coords.x/tileSize]; k2 = m[(coords.y+move_dist+tileSize-1)/tileSize*WW+(coords.x-1)/tileSize+1];
+	  if ((k1<2) && (k2<2))
       {
         old_coords.y = coords.y;
         coords.y += move_dist;
 	  }	
       break;
     case MovementDir::LEFT:
-	  if (checktile(coords.x - move_dist, coords.y, m))
+      k1 = m[coords.y/tileSize*WW+(coords.x-move_dist)/tileSize]; k2 = m[((coords.y-1)/tileSize+1)*WW+(coords.x-move_dist)/tileSize];
+	  if ((k1<2) && (k2<2))
       {
         old_coords.x = coords.x;
         coords.x -= move_dist;
 	  }
       break;
     case MovementDir::RIGHT:
-	  if (checktile(coords.x + move_dist + tileSize - 1, coords.y, m))
+      k1 = m[coords.y/tileSize*WW+(coords.x+move_dist+tileSize-1)/tileSize]; k2 = m[((coords.y-1)/tileSize+1)*WW+(coords.x+move_dist+tileSize-1)/tileSize];
+	  if ((k1<2) && (k2<2))
       {
         old_coords.x = coords.x;
         coords.x += move_dist;
@@ -49,8 +53,9 @@ void Player::ProcessInput(MovementDir dir, int *m)
 }
 
 Pixel getbgcolor(Image &i, int x, int y){return i.GetPixel(x,y);}
+Pixel getpcolor(Image &i, int x, int y){return i.GetPixel(x,tileSize - y - 1);}
 
-void Player::Draw(Image &screen, Image &bg)
+void Player::Draw(Image &screen, Image &bg, Image &img)
 {
   if(Moved())
   {

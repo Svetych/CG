@@ -8,9 +8,12 @@
 constexpr GLsizei WINDOW_WIDTH = 640, WINDOW_HEIGHT = 640;
 
 enum Tiles
-{ GRASS, WALL, HOLE, CRASH, FINISH };
+{ GRASS, HOLE, WALL, CRASH, FINISH };
 
 int Map [WW*WH];
+int ppx, ppy;
+Point starting_pos{.x = 0, .y = 0};
+Point player_pos = starting_pos;
 
 struct InputState
 {
@@ -136,7 +139,7 @@ void drawImage(Image &src, Point cords, Image &dest)
 
 	for (int y = cords.y; y < cords.y + Height && y < dest.Height(); ++y)
 		for (int x = cords.x; x < cords.x + Width && x < dest.Width(); ++x)
-			dest.PutPixel(x, y, src.GetPixel(x - cords.x, Height - y - 1 + cords.y));
+			dest.PutPixel(x, y, blend(dest.GetPixel(x, y), src.GetPixel(x - cords.x, Height - y - 1 + cords.y)));
 }
 
 void bgImage(Image &src, Point cords, Image &dest)
@@ -163,7 +166,7 @@ void drawMap(char *map, Image &dest)
 			switch (c)
 			{
 				case '@':
-					c = '.';
+					c = '.'; ppx = tileSize*(n % WW); ppy = tileSize*(n / WH); 
 				case '.':
 					drawImage(g, {tileSize*(n % WW), tileSize*(n / WH)},dest);
 					c = fgetc(f); Map[n++] = GRASS; 
@@ -187,6 +190,13 @@ void drawMap(char *map, Image &dest)
 				default: c = fgetc(f); break;
 			}
 	}	
+}
+
+void startlvl(char *map, Image &bg, Player &p)
+{
+	drawMap(map, bg);
+	player_pos = {.x = ppx, .y = ppy};
+	p.Reset(player_pos);
 }
 
 int main(int argc, char** argv)
@@ -222,16 +232,13 @@ int main(int argc, char** argv)
 	while (gl_error != GL_NO_ERROR)
 		gl_error = glGetError();
 
-	Point player_pos{.x = WINDOW_WIDTH / 2, .y = WINDOW_HEIGHT / 2};
-	Point starting_pos{.x = 0, .y = 0};
-	Player player{player_pos};
-
-	Image img("../resources/bg.jpg");
 	Image screenBuffer(WINDOW_WIDTH, WINDOW_HEIGHT, 4);
 	Image bg (WINDOW_WIDTH, WINDOW_HEIGHT, 4);
+	Image ball ("../resources/Ball.png");
 	char str[] = "../lvl/Map.txt";
-	drawMap(str, bg);
+	Player player{player_pos};
 	
+	startlvl(str, bg, player);
 
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);  GL_CHECK_ERRORS;
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f); GL_CHECK_ERRORS;
@@ -247,7 +254,7 @@ int main(int argc, char** argv)
     glfwPollEvents();
 
     processPlayerMovement(player);
-    player.Draw(screenBuffer, bg);
+    player.Draw(screenBuffer, bg, ball);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
     glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;

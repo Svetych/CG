@@ -24,8 +24,8 @@ struct Player
 
   bool Moved() const;
   void ProcessInput(MovementDir dir, int *m);
-  void Draw(Image &screen, Image &bg);
-  Point getcoords() {return coords;}
+  void Draw(Image &screen, Image &bg, Image &img);
+  void Reset(Point p) {old_coords = coords; coords = p;}
 
 private:
   Point coords {.x = 10, .y = 10};
