@@ -5,6 +5,8 @@
 #define GLFW_DLL
 #include <GLFW/glfw3.h>
 #include <string.h>
+//#include <unistd.h>
+
 
 constexpr GLsizei WINDOW_WIDTH = 640, WINDOW_HEIGHT = 640;
 
@@ -16,7 +18,7 @@ int ppx, ppy;
 Point starting_pos{.x = 0, .y = 0};
 Point player_pos = starting_pos;
 
-const char *lvls[4] = {"../lvl/Map1.txt", "../lvl/Map2.txt", "../lvl/Map3.txt", "../lvl/Map4.txt"};
+const char *lvls[5] = {"../lvl/Map1.txt", "../lvl/Map2.txt", "../lvl/Map3.txt", "../lvl/Map4.txt", "../lvl/Map5.txt"};
 int lvlnum;
 
 struct InputState
@@ -60,10 +62,10 @@ void bgImage(Image &src, Point cords, Image &dest)
 
 	for (int y = cords.y; y < cords.y + Height && y < dest.Height(); ++y)
 		for (int x = cords.x; x < cords.x + Width && x < dest.Width(); ++x)
-			dest.PutPixel(x, y, src.GetPixel(x, y));
+			dest.PutPixel(x, y, blend(dest.GetPixel(x, y), src.GetPixel(x, y)));
 }
 
-void drawMap(const char *map, Image &dest)
+void drawMap(const char *map, Image &dest, Image &anim)
 {
 	FILE *f;
 	
@@ -92,10 +94,12 @@ void drawMap(const char *map, Image &dest)
 					break;
 				case 'x':
 					drawImage(fin,{tileSize*(n % WW), tileSize*(n / WH)},dest);
+					//drawImage(fin,{tileSize*(n % WW), tileSize*(n / WH)},anim);
 					c = fgetc(f); Map[n++] = FINISH; 
 					break;
 				case '%':
-					drawImage(cw,{tileSize*(n % WW), tileSize*(n / WH)},dest);
+					drawImage(g,{tileSize*(n % WW), tileSize*(n / WH)},dest);
+					drawImage(cw,{tileSize*(n % WW), tileSize*(n / WH)},anim);
 					c = fgetc(f); Map[n++] = CRASH; 
 					break;
 				default: c = fgetc(f); break;
@@ -103,9 +107,19 @@ void drawMap(const char *map, Image &dest)
 	}	
 }
 
-void startlvl(const char *map, Image &bg, Player &p)
+void cleanbuf(Image &anim)
 {
-	drawMap(map, bg);
+	for (int y = 0; y < WINDOW_HEIGHT; ++y)
+		for (int x = 0; x < WINDOW_WIDTH; ++x)
+			anim.PutPixel(x, y, backgroundColor);
+}
+
+void startlvl(const char *map, Image &bg, Image &anim, Image &scr, Player &p)
+{
+	cleanbuf(anim);
+	drawMap(map, bg, anim);
+	bgImage(bg, starting_pos, scr);
+	bgImage(anim, starting_pos, scr);
 	player_pos = {.x = ppx, .y = ppy};
 	p.Reset(player_pos);
 }
@@ -132,24 +146,48 @@ void OnKeyboardPressed(GLFWwindow* window, int key, int scancode, int action, in
 	}
 }
 
-void processPlayerMovement(Player &player, Image &bg, Image &screenBuffer)
+void processPlayerMovement(Player &player, Image &bg, Image &anim, Image &scr)
 {
   if (Input.keys[GLFW_KEY_W]){
-    if (player.ProcessInput(MovementDir::UP, Map, player_pos))
-		{startlvl(lvls[lvlnum++], bg, player); bgImage(bg, starting_pos, screenBuffer);}
+    if (player.ProcessInput(MovementDir::UP, Map, player_pos)) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
 	}
   else if (Input.keys[GLFW_KEY_S]){
-    if (player.ProcessInput(MovementDir::DOWN, Map, player_pos ))
-		{startlvl(lvls[lvlnum++], bg, player); bgImage(bg, starting_pos, screenBuffer);}
+    if (player.ProcessInput(MovementDir::DOWN, Map, player_pos )) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+		
 	}
   if (Input.keys[GLFW_KEY_A]){
-    if (player.ProcessInput(MovementDir::LEFT, Map, player_pos ))
-		{startlvl(lvls[lvlnum++], bg, player); bgImage(bg, starting_pos, screenBuffer);}
+    if (player.ProcessInput(MovementDir::LEFT, Map, player_pos )) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+		
 	}
   else if (Input.keys[GLFW_KEY_D]){
-    if (player.ProcessInput(MovementDir::RIGHT, Map, player_pos ))
-		{startlvl(lvls[lvlnum++], bg, player); bgImage(bg, starting_pos, screenBuffer);}
+    if (player.ProcessInput(MovementDir::RIGHT, Map, player_pos )) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+		
 	}
+  if (Input.keys[GLFW_KEY_SPACE]){
+	Point p = player.getcoords();
+	int n = (p.y + tileSize/2)/tileSize, m = (p.x + tileSize/2)/tileSize;
+	int j, i = n-1;
+	while (i < n+2){
+		j = m-1;
+		while (j < m+2){	
+			if (Map[i*WW+j] == CRASH)
+			{
+				Map[i*WW+j] = GRASS;
+				int a = i*WW+j;
+				for (int y = tileSize*(a / WH); y < tileSize*(a / WH) + tileSize && y < WINDOW_HEIGHT; ++y)
+					for (int x = tileSize*(a % WW); x < tileSize*(a % WW) + tileSize && x < WINDOW_WIDTH; ++x)
+						anim.PutPixel(x, y, backgroundColor);
+				
+				bgImage(bg, starting_pos, scr);
+				bgImage(anim, starting_pos, scr);
+				i = n+2; j = m+2;
+			}
+			j++;
+		}
+		i++;
+	}
+
+  }
 }
 
 void OnMouseButtonClicked(GLFWwindow* window, int button, int action, int mods)
@@ -183,7 +221,6 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
   Input.lastY = float(ypos);
 }
 
-
 void OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
   // ...
@@ -204,8 +241,8 @@ int initGL()
 	std::cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
   std::cout << "Controls: "<< std::endl;
-  std::cout << "press right mouse button to capture/release mouse cursor  "<< std::endl;
   std::cout << "W, A, S, D - movement  "<< std::endl;
+  std::cout << "press SPACE to crash walls"<< std::endl;
   std::cout << "press ESC to exit" << std::endl;
 
 	return 0;
@@ -247,6 +284,7 @@ int main(int argc, char** argv)
 
 	Image screenBuffer(WINDOW_WIDTH, WINDOW_HEIGHT, 4);
 	Image bg (WINDOW_WIDTH, WINDOW_HEIGHT, 4);
+	Image anim (WINDOW_WIDTH, WINDOW_HEIGHT, 4);
 	Image ball ("../resources/Ball.png");
 	
 	Player player{player_pos};
@@ -255,8 +293,7 @@ int main(int argc, char** argv)
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);  GL_CHECK_ERRORS;
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f); GL_CHECK_ERRORS;
 
-	startlvl(lvls[lvlnum++], bg, player);
-	bgImage(bg, starting_pos, screenBuffer);
+	startlvl(lvls[lvlnum++], bg, anim, screenBuffer, player);
 	
   //game loop
 	while (!glfwWindowShouldClose(window))
@@ -266,7 +303,8 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame;
     glfwPollEvents();
 
-    processPlayerMovement(player, bg, screenBuffer);
+    processPlayerMovement(player, bg, anim, screenBuffer);
+    //bgImage(anim, starting_pos, screenBuffer);
     player.Draw(screenBuffer, bg, ball);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;

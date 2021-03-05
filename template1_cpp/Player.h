@@ -26,12 +26,13 @@ struct Player
   bool ProcessInput(MovementDir dir, int *m, Point pp);
   void Draw(Image &screen, Image &bg, Image &img);
   void Reset(Point p) {old_coords = coords; coords = p;}
+  Point getcoords() {return coords;}
 
 private:
   Point coords {.x = 10, .y = 10};
   Point old_coords {.x = 10, .y = 10};
   Pixel color {.r = 0, .g = 255, .b = 255, .a = 255};
-  int move_speed = 2;
+  int move_speed = 4;
 
 };
 
