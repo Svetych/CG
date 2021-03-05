@@ -23,7 +23,7 @@ struct Player
                  coords(pos), old_coords(coords) {};
 
   bool Moved() const;
-  void ProcessInput(MovementDir dir, int *m);
+  bool ProcessInput(MovementDir dir, int *m, Point pp);
   void Draw(Image &screen, Image &bg, Image &img);
   void Reset(Point p) {old_coords = coords; coords = p;}
 
