@@ -16,6 +16,7 @@ struct Pixel
 
 constexpr Pixel backgroundColor{0, 0, 0, 0};
 
+Pixel blend(Pixel oldPixel, Pixel newPixel);
 
 struct Image
 {
@@ -44,5 +45,5 @@ private:
   bool self_allocated = false;
 };
 
-#endif //MAIN_IMAGE_H
 
+#endif //MAIN_IMAGE_H

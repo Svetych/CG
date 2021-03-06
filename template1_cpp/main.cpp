@@ -5,7 +5,7 @@
 #define GLFW_DLL
 #include <GLFW/glfw3.h>
 #include <string.h>
-//#include <unistd.h>
+#include <unistd.h>
 
 
 constexpr GLsizei WINDOW_WIDTH = 640, WINDOW_HEIGHT = 640;
@@ -34,16 +34,6 @@ struct InputState
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
-
-static Pixel blend(Pixel oldPixel, Pixel newPixel)
-{
-	newPixel.r = newPixel.a / 255.0 * (newPixel.r - oldPixel.r) + oldPixel.r;
-	newPixel.g = newPixel.a / 255.0 * (newPixel.g - oldPixel.g) + oldPixel.g;
-	newPixel.b = newPixel.a / 255.0 * (newPixel.b - oldPixel.b) + oldPixel.b;
-	newPixel.a = 255;
-
-	return newPixel;
-}
 
 void drawImage(Image &src, Point cords, Image &dest)
 {
@@ -116,12 +106,36 @@ void cleanbuf(Image &anim)
 
 void startlvl(const char *map, Image &bg, Image &anim, Image &scr, Player &p)
 {
-	cleanbuf(anim);
-	drawMap(map, bg, anim);
-	bgImage(bg, starting_pos, scr);
-	bgImage(anim, starting_pos, scr);
-	player_pos = {.x = ppx, .y = ppy};
-	p.Reset(player_pos);
+	if (lvlnum < 6)
+	{
+		cleanbuf(anim);
+		drawMap(map, bg, anim);
+		bgImage(bg, starting_pos, scr);
+		bgImage(anim, starting_pos, scr);
+		player_pos = {.x = ppx, .y = ppy};
+		p.Reset(player_pos);
+	}
+	else
+	{
+		Image end ("../resources/Win.png");
+		drawMap("../lvl/Map1.txt", bg, anim);
+		cleanbuf(anim); cleanbuf(bg); cleanbuf(scr);
+		drawImage(end, starting_pos, bg);
+		bgImage(bg, starting_pos, scr);
+		player_pos = {.x = ppx, .y = ppy};
+		p.Reset(player_pos);
+	}
+	
+}
+
+void restartlvl(GLFWwindow* w, Image &end, Image &bg, Image &anim, Image &scr, Player &p)
+{
+	drawImage(end, starting_pos, scr); 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+	glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, scr.Data()); GL_CHECK_ERRORS;
+	glfwSwapBuffers(w);
+	sleep(3);
+	startlvl(lvls[lvlnum-1], bg, anim, scr, p);
 }
 
 void OnKeyboardPressed(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -146,22 +160,29 @@ void OnKeyboardPressed(GLFWwindow* window, int key, int scancode, int action, in
 	}
 }
 
-void processPlayerMovement(Player &player, Image &bg, Image &anim, Image &scr)
+void processPlayerMovement(GLFWwindow* w, Player &player, Image &bg, Image &anim, Image &scr)
 {
+  int flag;
+  Image end ("../resources/Died.png");
   if (Input.keys[GLFW_KEY_W]){
-    if (player.ProcessInput(MovementDir::UP, Map, player_pos)) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+	flag = player.ProcessInput(MovementDir::UP, Map, player_pos);
+    if (flag == 2) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+    else if (flag == 1) {restartlvl(w, end, bg, anim, scr, player);}
 	}
   else if (Input.keys[GLFW_KEY_S]){
-    if (player.ProcessInput(MovementDir::DOWN, Map, player_pos )) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
-		
+	flag = player.ProcessInput(MovementDir::DOWN, Map, player_pos);
+    if (flag == 2) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+    else if (flag == 1) {restartlvl(w, end, bg, anim, scr, player);}
 	}
   if (Input.keys[GLFW_KEY_A]){
-    if (player.ProcessInput(MovementDir::LEFT, Map, player_pos )) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
-		
+	flag = player.ProcessInput(MovementDir::LEFT, Map, player_pos);
+    if (flag == 2) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+    else if (flag == 1) {restartlvl(w, end, bg, anim, scr, player);}		
 	}
   else if (Input.keys[GLFW_KEY_D]){
-    if (player.ProcessInput(MovementDir::RIGHT, Map, player_pos )) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
-		
+	flag = player.ProcessInput(MovementDir::RIGHT, Map, player_pos);
+    if (flag == 2) {startlvl(lvls[lvlnum++], bg, anim, scr, player);}
+    else if (flag == 1) {restartlvl(w, end, bg, anim, scr, player);}		
 	}
   if (Input.keys[GLFW_KEY_SPACE]){
 	Point p = player.getcoords();
@@ -259,7 +280,7 @@ int main(int argc, char** argv)
 //	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow*  window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "task1 base project", nullptr, nullptr);
+  GLFWwindow*  window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "task1 A0 base project", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -303,7 +324,7 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame;
     glfwPollEvents();
 
-    processPlayerMovement(player, bg, anim, screenBuffer);
+    processPlayerMovement(window, player, bg, anim, screenBuffer);
     //bgImage(anim, starting_pos, screenBuffer);
     player.Draw(screenBuffer, bg, ball);
 

@@ -35,6 +35,8 @@ GLFW/glfw3.h
 -
 string.h
 -
+unistd.h
+-
 
 dependencies/include/GLAD/KHR/khrplatform.h
 stdint.h

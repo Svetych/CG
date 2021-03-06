@@ -9,9 +9,9 @@ bool Player::Moved() const
 }
 
 
-bool Player::ProcessInput(MovementDir dir, int *m, Point pp)
+int Player::ProcessInput(MovementDir dir, int *m, Point pp)
 {
-  int move_dist = move_speed * 1;
+  int move_dist = move_speed * 2;
   int k1, k2;
   switch(dir)
   {
@@ -22,8 +22,8 @@ bool Player::ProcessInput(MovementDir dir, int *m, Point pp)
 	    old_coords.y = coords.y;
         coords.y -= move_dist;
 	  }
-	  else if ((k1==1) || (k2==1)) {Reset(pp);}
-	  else if ((k1==2) || (k2==2)) {return true;}
+	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
+	  else if ((k1==2) || (k2==2)) {return 2;}
 	  
       break;
     case MovementDir::DOWN:
@@ -33,8 +33,8 @@ bool Player::ProcessInput(MovementDir dir, int *m, Point pp)
         old_coords.y = coords.y;
         coords.y += move_dist;
 	  }	
-	  else if ((k1==1) || (k2==1)) {Reset(pp);}
-	  else if ((k1==2) || (k2==2)) {return true;}
+	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
+	  else if ((k1==2) || (k2==2)) {return 2;}
 	  
       break;
     case MovementDir::LEFT:
@@ -44,8 +44,8 @@ bool Player::ProcessInput(MovementDir dir, int *m, Point pp)
         old_coords.x = coords.x;
         coords.x -= move_dist;
 	  }
-	  else if ((k1==1) || (k2==1)) {Reset(pp);}
-	  else if ((k1==2) || (k2==2)) {return true;}
+	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
+	  else if ((k1==2) || (k2==2)) {return 2;}
 	  
       break;
     case MovementDir::RIGHT:
@@ -55,14 +55,14 @@ bool Player::ProcessInput(MovementDir dir, int *m, Point pp)
         old_coords.x = coords.x;
         coords.x += move_dist;
 	  }
-	  else if ((k1==1) || (k2==1)) {Reset(pp);}
-	  else if ((k1==2) || (k2==2)) {return true;}
+	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
+	  else if ((k1==2) || (k2==2)) {return 2;}
 	  
       break;
     default:
       break;
   }
-  return false;
+  return 0;
 }
 
 Pixel getbgcolor(Image &i, int x, int y){return i.GetPixel(x,y);}
@@ -86,7 +86,7 @@ void Player::Draw(Image &screen, Image &bg, Image &img)
   {
     for(int x = coords.x; x <= coords.x + tileSize; ++x)
     {
-      screen.PutPixel(x, y, color);
+      screen.PutPixel(x, y, blend(bg.GetPixel(x, y), img.GetPixel(x - coords.x, tileSize - y - 1 + coords.y)));
     }
   }
 }
