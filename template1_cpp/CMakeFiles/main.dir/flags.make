@@ -3,7 +3,7 @@
 
 # compile C with /usr/bin/cc
 # compile CXX with /usr/bin/c++
-C_FLAGS = -g   -Wnarrowing
+C_FLAGS =   -Wnarrowing
 
 C_DEFINES = 
 

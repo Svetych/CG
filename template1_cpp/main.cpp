@@ -118,7 +118,7 @@ void startlvl(const char *map, Image &bg, Image &anim, Image &scr, Player &p)
 	else
 	{
 		Image end ("../resources/Win.png");
-		drawMap("../lvl/Map1.txt", bg, anim);
+		drawMap("../lvl/Map.txt", bg, anim);
 		cleanbuf(anim); cleanbuf(bg); cleanbuf(scr);
 		drawImage(end, starting_pos, bg);
 		bgImage(bg, starting_pos, scr);
@@ -280,7 +280,7 @@ int main(int argc, char** argv)
 //	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow*  window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "task1 A0 base project", nullptr, nullptr);
+  GLFWwindow*  window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "task1 A0 base", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
