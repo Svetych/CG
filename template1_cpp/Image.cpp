@@ -70,3 +70,25 @@ Pixel blend(Pixel oldPixel, Pixel newPixel)
 
 	return newPixel;
 }
+
+Pixel dark(Pixel oldPixel, int koef)
+{
+	Pixel newPixel;
+	newPixel.r = oldPixel.r - oldPixel.r / (darkkoef - koef);
+	newPixel.g = oldPixel.g - oldPixel.g / (darkkoef - koef);
+	newPixel.b = oldPixel.b - oldPixel.b / (darkkoef - koef);
+	newPixel.a = 255;
+
+	return newPixel;
+}
+
+Pixel undark(Pixel srcPixel, Pixel oldPixel)
+{
+	Pixel newPixel;
+	newPixel.r = oldPixel.r + srcPixel.r / (darkkoef);
+	newPixel.g = oldPixel.g + srcPixel.g / (darkkoef);
+	newPixel.b = oldPixel.b + srcPixel.b / (darkkoef);
+	newPixel.a = 255;
+
+	return newPixel;
+}

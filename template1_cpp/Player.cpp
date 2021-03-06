@@ -21,6 +21,7 @@ int Player::ProcessInput(MovementDir dir, int *m, Point pp)
       {
 	    old_coords.y = coords.y;
         coords.y -= move_dist;
+        return 3;
 	  }
 	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
 	  else if ((k1==2) || (k2==2)) {return 2;}
@@ -32,6 +33,7 @@ int Player::ProcessInput(MovementDir dir, int *m, Point pp)
       {
         old_coords.y = coords.y;
         coords.y += move_dist;
+        return 3;
 	  }	
 	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
 	  else if ((k1==2) || (k2==2)) {return 2;}
@@ -43,6 +45,7 @@ int Player::ProcessInput(MovementDir dir, int *m, Point pp)
       {
         old_coords.x = coords.x;
         coords.x -= move_dist;
+        return 3;
 	  }
 	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
 	  else if ((k1==2) || (k2==2)) {return 2;}
@@ -54,6 +57,7 @@ int Player::ProcessInput(MovementDir dir, int *m, Point pp)
       {
         old_coords.x = coords.x;
         coords.x += move_dist;
+        return 3;
 	  }
 	  else if ((k1==1) || (k2==1)) {Reset(pp); return 1;}
 	  else if ((k1==2) || (k2==2)) {return 2;}
@@ -66,7 +70,6 @@ int Player::ProcessInput(MovementDir dir, int *m, Point pp)
 }
 
 Pixel getbgcolor(Image &i, int x, int y){return i.GetPixel(x,y);}
-//Pixel getpcolor(Image &i, int x, int y){return i.GetPixel(x,tileSize - y - 1);}
 
 void Player::Draw(Image &screen, Image &bg, Image &img)
 {

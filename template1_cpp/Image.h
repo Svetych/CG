@@ -5,6 +5,7 @@
 
 constexpr int tileSize = 16;
 constexpr int WW = 40, WH = 40;
+constexpr int lightkoef = 5, darkkoef = 10;
 
 struct Pixel
 {
@@ -17,6 +18,9 @@ struct Pixel
 constexpr Pixel backgroundColor{0, 0, 0, 0};
 
 Pixel blend(Pixel oldPixel, Pixel newPixel);
+Pixel light(Pixel oldPixel, int koef);
+Pixel dark(Pixel oldPixel, int koef);
+Pixel undark(Pixel newPixel, Pixel oldPixel);
 
 struct Image
 {
